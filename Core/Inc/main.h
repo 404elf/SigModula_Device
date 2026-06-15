@@ -59,6 +59,28 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define LED_KEY_Pin GPIO_PIN_3
 #define LED_KEY_GPIO_Port GPIOC
+#define A50_FQ_Pin GPIO_PIN_3
+#define A50_FQ_GPIO_Port GPIOA
+#define A50_CLK_Pin GPIO_PIN_4
+#define A50_CLK_GPIO_Port GPIOA
+#define A50_RST_Pin GPIO_PIN_6
+#define A50_RST_GPIO_Port GPIOA
+#define A50_D0_Pin GPIO_PIN_0
+#define A50_D0_GPIO_Port GPIOB
+#define A50_D1_Pin GPIO_PIN_1
+#define A50_D1_GPIO_Port GPIOB
+#define A50_D2_Pin GPIO_PIN_2
+#define A50_D2_GPIO_Port GPIOB
+#define A50_D3_Pin GPIO_PIN_3
+#define A50_D3_GPIO_Port GPIOB
+#define A50_D4_Pin GPIO_PIN_4
+#define A50_D4_GPIO_Port GPIOB
+#define A50_D5_Pin GPIO_PIN_5
+#define A50_D5_GPIO_Port GPIOB
+#define A50_D6_Pin GPIO_PIN_6
+#define A50_D6_GPIO_Port GPIOB
+#define A50_D7_Pin GPIO_PIN_7
+#define A50_D7_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
