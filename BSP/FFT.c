@@ -12,7 +12,7 @@ void FFT_Init(void) {
     // 初始化快速实数 FFT，指定长度为 1024 点
     arm_rfft_fast_init_f32(&rfft_instance, FFT_LENGTH);
 }
-
+//markdown:时域数据->转复数时域形式（根据需要）->转频谱（实数+复数）（幅度+相位）->转幅度谱（纯幅度）
 /**
   * @brief  实数 RFFT 计算
   * @param  input_real_data: 输入纯实数采样电压数组（长度必须为 FFT_LENGTH）

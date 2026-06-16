@@ -1,4 +1,3 @@
-#include "main.h"
 #include "APP_main.h"
 #include "arm_math.h"
 
