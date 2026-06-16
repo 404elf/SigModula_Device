@@ -57,8 +57,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, A50_FQ_Pin|A50_CLK_Pin|A50_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, A50_D0_Pin|A50_D1_Pin|A50_D2_Pin|A50_D3_Pin
-                          |A50_D4_Pin|A50_D5_Pin|A50_D6_Pin|A50_D7_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(A50_DATA_GPIO_Port, A50_DATA_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = LED_KEY_Pin;
@@ -74,14 +73,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PBPin PBPin PBPin PBPin
-                           PBPin PBPin PBPin PBPin */
-  GPIO_InitStruct.Pin = A50_D0_Pin|A50_D1_Pin|A50_D2_Pin|A50_D3_Pin
-                          |A50_D4_Pin|A50_D5_Pin|A50_D6_Pin|A50_D7_Pin;
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = A50_DATA_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(A50_DATA_GPIO_Port, &GPIO_InitStruct);
 
 }
 
