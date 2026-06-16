@@ -116,6 +116,7 @@ uint32_t Convert_Freq(double Real_f)
 		return (uint32_t)(AD9850_f_Num*Real_f);
 	else	if(AD985x==AD9851)//AD9851
 		return (uint32_t)(AD9851_f_Num*Real_f);
+	return 0;
 }
 
 /***************************************************************************
