@@ -47,6 +47,6 @@ void Run_Slow_AGC(uint16_t* adc_raw_buffer, uint32_t buffer_len) {
     }
 
     //µÁ—π–¥»ÎVCA841
-    HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, vca_dac_val);
+    HAL_DAC_SetValue(&hdac, VCA_DAC_CHANNEL, DAC_ALIGN_12B_R, vca_dac_val);
 }
 
