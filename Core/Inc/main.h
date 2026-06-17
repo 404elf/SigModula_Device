@@ -61,9 +61,13 @@ void Error_Handler(void);
 #define LED_KEY_GPIO_Port GPIOC
 #define A50_FQ_Pin GPIO_PIN_3
 #define A50_FQ_GPIO_Port GPIOA
-#define A50_CLK_Pin GPIO_PIN_4
+#define VGA841_Pin GPIO_PIN_4
+#define VGA841_GPIO_Port GPIOA
+#define Vout_Pin GPIO_PIN_5
+#define Vout_GPIO_Port GPIOA
+#define A50_CLK_Pin GPIO_PIN_6
 #define A50_CLK_GPIO_Port GPIOA
-#define A50_RST_Pin GPIO_PIN_6
+#define A50_RST_Pin GPIO_PIN_7
 #define A50_RST_GPIO_Port GPIOA
 #define A50_DATA_Pin GPIO_PIN_7
 #define A50_DATA_GPIO_Port GPIOB

@@ -318,39 +318,39 @@ static void OLED_SetCursor(uint8_t x, uint8_t y)
     OLED_WriteCmd(x & 0x0F);                    // 设置列地址低 4 位
 }
 
-/**
-  * @brief  GPIO 模拟 I2C 引脚初始化（推挽输出）
-  *         将 SCL 和 SDA 配置为开漏输出（外部上拉）或推挽输出
-  */
-static void OLED_I2C_GPIO_Init(void)
-{
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
+// /**
+//   * @brief  GPIO 模拟 I2C 引脚初始化（推挽输出）
+//   *         将 SCL 和 SDA 配置为开漏输出（外部上拉）或推挽输出
+//   */
+// static void OLED_I2C_GPIO_Init(void)
+// {
+//     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-    /* 使能 GPIO 时钟（根据端口自动判断） */
-    if (OLED_I2C_SCL_Port == GPIOA || OLED_I2C_SDA_Port == GPIOA)
-        __HAL_RCC_GPIOA_CLK_ENABLE();
-    if (OLED_I2C_SCL_Port == GPIOB || OLED_I2C_SDA_Port == GPIOB)
-        __HAL_RCC_GPIOB_CLK_ENABLE();
-    if (OLED_I2C_SCL_Port == GPIOC || OLED_I2C_SDA_Port == GPIOC)
-        __HAL_RCC_GPIOC_CLK_ENABLE();
-    if (OLED_I2C_SCL_Port == GPIOD || OLED_I2C_SDA_Port == GPIOD)
-        __HAL_RCC_GPIOD_CLK_ENABLE();
+//     /* 使能 GPIO 时钟（根据端口自动判断） */
+//     if (OLED_I2C_SCL_Port == GPIOA || OLED_I2C_SDA_Port == GPIOA)
+//         __HAL_RCC_GPIOA_CLK_ENABLE();
+//     if (OLED_I2C_SCL_Port == GPIOB || OLED_I2C_SDA_Port == GPIOB)
+//         __HAL_RCC_GPIOB_CLK_ENABLE();
+//     if (OLED_I2C_SCL_Port == GPIOC || OLED_I2C_SDA_Port == GPIOC)
+//         __HAL_RCC_GPIOC_CLK_ENABLE();
+//     if (OLED_I2C_SCL_Port == GPIOD || OLED_I2C_SDA_Port == GPIOD)
+//         __HAL_RCC_GPIOD_CLK_ENABLE();
 
-    /* 配置 SCL 引脚：推挽输出 */
-    GPIO_InitStruct.Pin = OLED_I2C_SCL_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(OLED_I2C_SCL_Port, &GPIO_InitStruct);
+//     /* 配置 SCL 引脚：推挽输出 */
+//     GPIO_InitStruct.Pin = OLED_I2C_SCL_Pin;
+//     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+//     GPIO_InitStruct.Pull = GPIO_PULLUP;
+//     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+//     HAL_GPIO_Init(OLED_I2C_SCL_Port, &GPIO_InitStruct);
 
-    /* 配置 SDA 引脚：推挽输出 */
-    GPIO_InitStruct.Pin = OLED_I2C_SDA_Pin;
-    HAL_GPIO_Init(OLED_I2C_SDA_Port, &GPIO_InitStruct);
+//     /* 配置 SDA 引脚：推挽输出 */
+//     GPIO_InitStruct.Pin = OLED_I2C_SDA_Pin;
+//     HAL_GPIO_Init(OLED_I2C_SDA_Port, &GPIO_InitStruct);
 
-    /* 初始状态：SCL 和 SDA 均为高电平（总线空闲） */
-    OLED_SCL_H();
-    OLED_SDA_H();
-}
+//     /* 初始状态：SCL 和 SDA 均为高电平（总线空闲） */
+//     OLED_SCL_H();
+//     OLED_SDA_H();
+// }
 
 /**
   * @brief  SSD1306 初始化序列

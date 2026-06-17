@@ -17,14 +17,14 @@
 #define AD9850_f_Num  34.359738368	//频率转换系数：2^32/系统时钟频率
 #define AD9851_f_Num  23.860929422	//频率转换系数：2^32/系统时钟频率
 
-// AD985x 控制引脚定义 (STM32F4 HAL)
-#define AD985x_GPIO_Port   GPIOA
-#define AD985x_rst_Pin     GPIO_PIN_6   // 复位
-#define AD985x_clk_Pin     GPIO_PIN_4   // 串行时钟输入
-#define AD985x_fq_Pin      GPIO_PIN_3   // 数据更新
+// AD985x 控制引脚定义（用cubemx直接初始化，记得userlabel即可）
+#define AD985x_GPIO_Port     A50_FQ_GPIO_Port      // GPIOA
+#define AD985x_rst_Pin       A50_RST_Pin            // 复位
+#define AD985x_clk_Pin       A50_CLK_Pin            // 串行时钟输入
+#define AD985x_fq_Pin        A50_FQ_Pin             // 数据更新
 
-#define AD985x_Data_Port   GPIOB
-#define AD985x_bit_data_Pin GPIO_PIN_7  // 串行数据输入
+#define AD985x_Data_Port     A50_DATA_GPIO_Port     // GPIOB
+#define AD985x_bit_data_Pin  A50_DATA_Pin           // 串行数据输入
 
 #define AD985x_DataBus     GPIOB->BSRR  // 并行数据总线 PB0-7 (BSRR 寄存器)
 
