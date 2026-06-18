@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
 #include "dac.h"
 #include "dma.h"
 #include "tim.h"
@@ -93,6 +94,8 @@ int main(void)
   MX_DMA_Init();
   MX_DAC_Init();
   MX_TIM6_Init();
+  MX_ADC1_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   app_init();
   /* USER CODE END 2 */
