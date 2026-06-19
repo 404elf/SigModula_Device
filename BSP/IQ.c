@@ -2,6 +2,23 @@
 #include "FFT.h"
 #include "arm_math.h"
 
+// fs = 800kHz, IF = 200kHz → fs/IF = 4
+// 2 * cos(2 * pi * IF / fs * n) = 2 * cos(pi * n / 2)
+const float cos_table[4] = { 
+    2.0f,   // n=0: 2 * cos(0)
+    0.0f,   // n=1: 2 * cos(pi/2)
+   -2.0f,   // n=2: 2 * cos(pi)
+    0.0f    // n=3: 2 * cos(3pi/2)
+};
+
+// -2 * sin(2 * pi * IF / fs * n) = -2 * sin(pi * n / 2)
+const float sin_table[4] = { 
+    0.0f,   // n=0: -2 * sin(0)
+   -2.0f,   // n=1: -2 * sin(pi/2)
+    0.0f,   // n=2: -2 * sin(pi)
+    2.0f    // n=3: -2 * sin(3pi/2)
+};
+
 // 4点滑动平均滤波器缓冲区
 static float filter_buf_I[4] = {0};
 static float filter_buf_Q[4] = {0};
@@ -72,6 +89,7 @@ void Run_IQ_Demodulation_800k(float* pRawData) {
         if (delta_theta < -PI) delta_theta += 2.0f * PI;
         prev_theta = current_theta;
 
+        //离散频率偏移f_offset
         // 差分求导 采样率为 fs = 800kHz
         // 常数项 800k/2pi ≈ 127323.954
         FM_deviation_buffer[n] = 127323.954f * delta_theta;

@@ -14,9 +14,9 @@
 
 // ---------- OLED I2C 引脚定义（GPIO 模拟 I2C） ----------
 // 用户按需修改下面的引脚
-#define OLED_I2C_SCL_Port   GPIOB
+#define OLED_I2C_SCL_Port   GPIOF
 #define OLED_I2C_SCL_Pin    GPIO_PIN_6
-#define OLED_I2C_SDA_Port   GPIOB
+#define OLED_I2C_SDA_Port   GPIOF
 #define OLED_I2C_SDA_Pin    GPIO_PIN_7
 
 // ---------- I2C 通信配置 ----------

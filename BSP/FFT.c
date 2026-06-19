@@ -19,20 +19,20 @@ void FFT_Init(void) {
   * @param  output_mag_data: 输出的幅度谱，长度为 FFT_LENGTH/2 + 1
   */
 void FFT_Calculate(float32_t* input_real_data, float32_t* output_mag_data) {
-    uint32_t i;
-    float32_t mean = 0.0f;
+    //uint32_t i;
+    // float32_t mean = 0.0f;
 
-    //平均去直流
-    for (i = 0; i < FFT_LENGTH; i++) {
-        mean += input_real_data[i];
-    }
-    mean /= (float32_t)FFT_LENGTH;
+    // //平均去直流
+    // for (i = 0; i < FFT_LENGTH; i++) {
+    //     mean += input_real_data[i];
+    // }
+    // mean /= (float32_t)FFT_LENGTH;
 
-    // 将 input_real_data 作为去直流的临时缓冲区
-    //相比于先前，不需要转复数数组了，所以直接在输入基础上修改即可
-    for (i = 0; i < FFT_LENGTH; i++) {
-        input_real_data[i] -= mean;
-    }
+    // // 将 input_real_data 作为去直流的临时缓冲区
+    // //相比于先前，不需要转复数数组了，所以直接在输入基础上修改即可
+    // for (i = 0; i < FFT_LENGTH; i++) {
+    //     input_real_data[i] -= mean;
+    // }
  
     // rfft，比cfft快一倍（必然自然序）
     //对称性，直接省一半长度

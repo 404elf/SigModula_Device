@@ -10,6 +10,7 @@
 #define VCA_DAC_LIMIT   VMAX     //限幅值
 
 static uint16_t vca_dac_val = 1200; // 初始化中点约 1V
+static uint32_t last_agc_ms = 0;    // AGC 200ms 节流计时
 
 /**
   * @brief  慢速AGC(200ms一次)
@@ -50,3 +51,41 @@ void Run_Slow_AGC(uint16_t* adc_raw_buffer, uint32_t buffer_len) {
     HAL_DAC_SetValue(&hdac, VCA_DAC_CHANNEL, DAC_ALIGN_12B_R, vca_dac_val);
 }
 
+/**
+  * @brief  手动设置VCA841控制电压（绕过AGC反馈，直接给定增益）
+  * @param  voltage: 目标电压 0 ~ 3.3V（rVREF）
+  * @note   0V=最小增益, 2V=最大增益, 超过2V限幅
+  */
+void VGA_SetVoltage(float voltage) {
+    if (voltage < 0.0f) voltage = 0.0f;
+    if (voltage > rVMAX) voltage = rVMAX;
+    vca_dac_val = (uint16_t)(voltage / rVREF * 4095);
+    HAL_DAC_SetValue(&hdac, VCA_DAC_CHANNEL, DAC_ALIGN_12B_R, vca_dac_val);
+}
+
+/**
+  * @brief 初始化 DWT 周期计数器
+  */
+void DWT_Init(void) {
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DWT->CYCCNT = 0;
+    DWT->CTRL   |= DWT_CTRL_CYCCNTENA_Msk;
+}
+
+/**
+  * @brief  获取上电以来毫秒数
+  * @retval 毫秒值
+  */
+uint32_t DWT_Get_ms(void) {
+    return DWT->CYCCNT / (SystemCoreClock / 1000);
+}
+
+/**
+  * @brief  慢速AGC — 200ms自动节流包装
+  */
+void Run_Slow_AGC_200ms(uint16_t* adc_raw_buffer, uint32_t buffer_len) {
+    uint32_t now = DWT_Get_ms();
+    if (now - last_agc_ms < 200) return;
+    last_agc_ms = now;
+    Run_Slow_AGC(adc_raw_buffer, buffer_len);
+}

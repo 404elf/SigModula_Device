@@ -1,0 +1,21 @@
+宝贝名称：VCA821 AGC电压增益模块
+宝贝大小：50mm X 50mm
+宝贝供电：正负5V
+宝贝详情：本店此宝贝采用大量的滤波电容用作电源退耦作用，大面积铺地并打过孔，
+均按照高频电路设计，有很好的频率特性，我们可以按照客户的要求进行调试和设计。
+部分参数未给出，如要购买，详情请咨询卖家。
+
+本店VCA821_AGC模块具体参数：
+带宽可以到350MHz,最大增益为40dB，作为AGC环路控制时，动态范围可达42dB,非常适用于高频类系统设计。
+但是VCA821的低频效果不大理想，到1KHz基本波形畸变严重，噪声比较大。
+
+
+
+VCA821介绍：
+1、710MHz SMALL-SIGNAL BANDWIDTH
+2、320MHz 4Vpp,BANDWIDTH (G = +10V/V)
+3、0.1dB GAIN FLATNESS to 135MHz
+4、2500V/ms SLEW RATE
+5、> 40dB GAIN ADJUST RANGE
+6、HIGH GAIN ACCURACY: 20dB ±0.3dB
+7、HIGH OUTPUT CURRENT: ±90mA

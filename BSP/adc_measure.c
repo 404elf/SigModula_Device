@@ -12,6 +12,8 @@
 uint16_t ADC_Value_Buffer[ADC_BUF_SIZE];    // ADC采样值缓冲区
 float v_process_buffer[2][FFT_LENGTH];
 
+volatile uint8_t adc_buffer_ready = 0;  // 0=无, 1=半缓冲就绪, 2=全缓冲就绪
+
 //*markdown：可见这种计算不返回，用全局变量引出是一种很方便的方法
 //全局变量Vpp（需要自取）
 volatile float current_measured_vpp = 0.0f; 
@@ -20,8 +22,7 @@ volatile float current_measured_vpp = 0.0f;
  * @brief 启动ADC
  */
 void ADC_Measure_Start(void){
-    HAL_ADC_Start_DMA(&hadc1,(uint32_t*)ADC_Value_Buffer,ADC_BUF_SIZE);
-    ////HAL_TIM_Base_Start(&htim2); 
+    HAL_ADC_Start_DMA(&MEASURE_ADC_HANDLE, (uint32_t*)ADC_Value_Buffer, ADC_BUF_SIZE);
 }
 
 //*mark:这里的Get，实现了处理与读写分离的操作，确保了数值自动更新，随意拿取
@@ -43,7 +44,7 @@ void ADC_Cal_Vpp(uint16_t* pBuffer, uint16_t length, uint8_t ping_pong_index){
         if(pBuffer_Reg > global_max) global_max = pBuffer_Reg;
         if(pBuffer_Reg < global_min) global_min = pBuffer_Reg;
 
-        v_process_buffer[ping_pong_index][i] = (float)pBuffer_Reg;
+        v_process_buffer[ping_pong_index][i] = (float)pBuffer_Reg-2048.0f;
     }
     
     calc_count++;
@@ -76,6 +77,7 @@ float Get_Vpp(void) {
  */
 void Measure_ADC_HalfCpltCallback(void) {
      ADC_Cal_Vpp(&ADC_Value_Buffer[0], ADC_BUF_SIZE / 2,0);
+     adc_buffer_ready = 1;
 }
 
 /**
@@ -83,4 +85,5 @@ void Measure_ADC_HalfCpltCallback(void) {
  */
 void Measure_ADC_FullCpltCallback(void) {
     ADC_Cal_Vpp(&ADC_Value_Buffer[ADC_BUF_SIZE / 2], ADC_BUF_SIZE / 2,1);
+    adc_buffer_ready = 2;
 }

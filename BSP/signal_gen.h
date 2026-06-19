@@ -3,7 +3,9 @@
 
 #include "main.h"
 
+#ifndef PI
 #define PI 3.1415926535f
+#endif
 #define DAC_SAMPLE_RATE  250000.0f   // DAC采样率（由触发定时器频率决定）
 
 #define SIGGEN_TIM        TIM6               // 触发定时器
