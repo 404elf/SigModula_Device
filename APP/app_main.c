@@ -9,15 +9,15 @@ void app_init(void) {
     Init_SineRef();
 
     AD985x_Init(AD9850, SERIAL);
+    AD985x_SetFre_Phase(9800000.0f, 0);
 
     ADC_Measure_Start();
     SignalGen_Start(0.0f);
     VGA_SetVoltage(1.0f);
-    
 }
 
 void app_loop(void) {
-    Run_Slow_AGC_200ms(ADC_Value_Buffer,ADC_BUF_SIZE);
+    Run_Slow_AGC_200ms();
 }
 
 
