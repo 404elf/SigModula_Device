@@ -12,7 +12,7 @@
 
 // 内部变量 - 存储在内存中的双缓冲波形表
 
-static uint16_t DAC_Buffer[DAC_BUF_SIZE]; // 唯一的一段环形 DMA 缓冲
+static uint16_t DAC_Buffer[DAC_BUF_SIZE] __attribute__((section(".sram2_data"))); // 唯一的一段环形 DMA 缓冲
 
 #define REF_POINTS 1024
 static float SineRef[REF_POINTS]; // 基准正弦表 (0.0~1.0)

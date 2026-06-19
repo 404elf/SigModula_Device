@@ -75,6 +75,15 @@ void Error_Handler(void);
 #define A50_CLK_GPIO_Port GPIOA
 #define A50_RST_Pin GPIO_PIN_7
 #define A50_RST_GPIO_Port GPIOA
+#define TASKA_KEY_Pin GPIO_PIN_0
+#define TASKA_KEY_GPIO_Port GPIOB
+#define TASKA_KEY_EXTI_IRQn EXTI0_IRQn
+#define TASKB_KEY_Pin GPIO_PIN_1
+#define TASKB_KEY_GPIO_Port GPIOB
+#define TASKB_KEY_EXTI_IRQn EXTI1_IRQn
+#define TASKC_KEY_Pin GPIO_PIN_2
+#define TASKC_KEY_GPIO_Port GPIOB
+#define TASKC_KEY_EXTI_IRQn EXTI2_IRQn
 #define A50_DATA_Pin GPIO_PIN_7
 #define A50_DATA_GPIO_Port GPIOB
 

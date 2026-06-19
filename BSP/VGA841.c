@@ -41,28 +41,10 @@ void VGA_SetVoltage(float voltage) {
 }
 
 /**
-  * @brief 初始化 DWT 周期计数器
-  */
-void DWT_Init(void) {
-    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-    DWT->CYCCNT = 0;
-    DWT->CTRL   |= DWT_CTRL_CYCCNTENA_Msk;
-}
-
-/**
-  * @brief  获取上电以来毫秒数
-  * @retval 毫秒值
-  */
-uint32_t DWT_Get_ms(void) {
-    return DWT->CYCCNT / (SystemCoreClock / 1000);
-}
-
-
-/**
-  * @brief  AGC （200ms一次）
+  * @brief  AGC （200ms一次，基于 HAL_GetTick）
   */
 void Run_Slow_AGC_200ms(void) {
-    uint32_t now = DWT_Get_ms();
+    uint32_t now = HAL_GetTick();
     if (now - last_agc_ms < 200) return;
     last_agc_ms = now;
     Run_Slow_AGC();

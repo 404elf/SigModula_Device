@@ -9,7 +9,7 @@
 #define ADC_BUF_SIZE (FFT_LENGTH * 2)
 
 
-uint16_t ADC_Value_Buffer[ADC_BUF_SIZE];    // ADC采样值缓冲区
+uint16_t ADC_Value_Buffer[ADC_BUF_SIZE] __attribute__((section(".sram2_data")));    // ADC采样值缓冲区
 float v_process_buffer[2][FFT_LENGTH];
 
 volatile uint8_t adc_buffer_ready = 0;  // 0=无, 1=半缓冲就绪, 2=全缓冲就绪

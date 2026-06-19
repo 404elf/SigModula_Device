@@ -41,30 +41,32 @@ void Run_IQ_Demodulation_800k(float* pRawData) {
 
     //正交同相分量相乘，进行解调
     for (n = 0; n < FFT_LENGTH; n++) {
-        uint8_t phase_step = n & 0x03; //n % 4（2^n专用）
+        uint8_t phase_step = n & 0x03; // n % 4，用位运算加速查表
         
-        switch (phase_step) {
-            case 0:
-                I_raw =  2.0f * pRawData[n];
-                Q_raw =  0.0f;
-                break;
-            case 1:
-                I_raw =  0.0f;
-                Q_raw = -2.0f * pRawData[n];
-                break;
-            case 2:
-                I_raw = -2.0f * pRawData[n];
-                Q_raw =  0.0f;
-                break;
-            case 3:
-                I_raw =  0.0f;
-                Q_raw =  2.0f * pRawData[n];
-                break;
-            default:
-                I_raw = 0.0f;
-                Q_raw = 0.0f;
-                break;
-        }
+        I_raw = cos_table[phase_step] * pRawData[n];
+        Q_raw = sin_table[phase_step] * pRawData[n];
+        // switch (phase_step) {
+        //     case 0:
+        //         I_raw =  2.0f * pRawData[n];
+        //         Q_raw =  0.0f;
+        //         break;
+        //     case 1:
+        //         I_raw =  0.0f;
+        //         Q_raw = -2.0f * pRawData[n];
+        //         break;
+        //     case 2:
+        //         I_raw = -2.0f * pRawData[n];
+        //         Q_raw =  0.0f;
+        //         break;
+        //     case 3:
+        //         I_raw =  0.0f;
+        //         Q_raw =  2.0f * pRawData[n];
+        //         break;
+        //     default:
+        //         I_raw = 0.0f;
+        //         Q_raw = 0.0f;
+        //         break;
+        // }
 
         //低通滤波，滤除高频400khz
         filter_buf_I[filter_index] = I_raw;
