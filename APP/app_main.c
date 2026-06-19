@@ -40,6 +40,7 @@ void app_init(void) {
 
 
 void app_loop(void) {
+    static uint8_t init_once = 0;
     Run_Slow_AGC_200ms();
     if (key_last_flag!=key_flag){
       key_last_flag=key_flag;
@@ -49,6 +50,14 @@ void app_loop(void) {
       tab_flag=0;
     }
     switch (key_flag){
+        case TASK_Init:
+            if (!init_once) {
+                OLED_ClearBuffer();
+                OLED_ShowString(0, 0, "Press key to start", 1);
+                OLED_Refresh();
+                init_once = 1;
+            }
+            break;
         case TaskA:
             if (tab_flag) TaskA_Init();
             TaskA_Loop();
@@ -61,6 +70,7 @@ void app_loop(void) {
             if (tab_flag) TaskC_Init();
             TaskC_Loop(); 
             break;
+        default: break;
     }
 }
 
