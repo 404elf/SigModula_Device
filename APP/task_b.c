@@ -97,8 +97,14 @@ void TaskB_Loop(void) {
     }
 
     // OLED Ë¢ÐÂ
+    OLED_ClearBuffer();
+    OLED_ShowString(0, 0, "Task B: FM Demod", 1);
+    OLED_ShowString(0, 2, "mf :", 1);
+    OLED_ShowString(0, 4, "dfm:", 1);
+    OLED_ShowString(0, 6, "F  :", 1);
     OLED_ShowFloat(40, 2, measured_mf,  2, 2, 1);
     OLED_ShowFloat(40, 4, measured_dfm, 1, 2, 1);
     OLED_ShowFloat(40, 6, measured_freq, 1, 2, 1);
+    OLED_Refresh();
 }
 

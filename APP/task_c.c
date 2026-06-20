@@ -69,7 +69,7 @@ static float Calc_MA(float* envelope, uint32_t len, float* env_vpp) {
         if (envelope[i] > amax) amax = envelope[i];
         if (envelope[i] < amin) amin = envelope[i];
     }
-    *env_vpp = (amax - amin) * 3.3f / 4095.0f;
+    *env_vpp = (amax - amin) * 3.3f / 2047.0f;  // 调制信号 Vpp（包络范围0~2047）
     if (amax + amin < 0.001f) return 0.0f;
     return (amax - amin) / (amax + amin);
 }
@@ -196,6 +196,7 @@ void TaskC_Loop(void) {
     }
 
     // OLED 刷新
+    OLED_ClearBuffer();
     OLED_ShowString(0, 0, mode == 0 ? "AM " : mode == 1 ? "FM " : "CW ", 1);
     OLED_ShowFloat(40, 0, current_fc, 3, 1, 1);
     if (mode == 0) {
@@ -209,4 +210,5 @@ void TaskC_Loop(void) {
         OLED_ShowFloat(0, 2, current_fc, 3, 1, 1);
         OLED_ShowString(40, 2, "MHz CW", 1);
     }
+    OLED_Refresh();
 }
