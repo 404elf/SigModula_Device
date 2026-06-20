@@ -34,7 +34,7 @@ static float Goertzel_200k(float* raw, uint32_t len) {
         s2 = s1;
         s1 = s0;
     }
-    return s1 * s1 + s2 * s2;   // |X[k]|?
+    return s1 * s1 + s2 * s2;   // |X[k]|^2
 }
 
 /* ---- 多周期过零测频（迟滞门限可配） ---- */
@@ -62,24 +62,26 @@ static float Calc_Freq_ZC(float* signal, uint32_t len, float fs, float hysteresi
     return 1.0f / period;
 }
 
-/* ---- 调幅度 ma ---- */
-static float Calc_MA(float* envelope, uint32_t len) {
+/* ---- 调幅度 ma，同时输出包络 Vpp (V) ---- */
+static float Calc_MA(float* envelope, uint32_t len, float* env_vpp) {
     float amax = envelope[0], amin = envelope[0];
     for (uint32_t i = 1; i < len; i++) {
         if (envelope[i] > amax) amax = envelope[i];
         if (envelope[i] < amin) amin = envelope[i];
     }
+    *env_vpp = (amax - amin) * 3.3f / 4095.0f;
     if (amax + amin < 0.001f) return 0.0f;
     return (amax - amin) / (amax + amin);
 }
 
-/* ---- 最大频偏 Δfm (kHz) ---- */
-static float Calc_DeltaFm(float* fm_dev, uint32_t len) {
+/* ---- 最大频偏 Δfm (kHz)，同时输出调制 Vpp (Hz→V) ---- */
+static float Calc_DeltaFm(float* fm_dev, uint32_t len, float* mod_vpp) {
     float fmax = fm_dev[0], fmin = fm_dev[0];
     for (uint32_t i = 1; i < len; i++) {
         if (fm_dev[i] > fmax) fmax = fm_dev[i];
         if (fm_dev[i] < fmin) fmin = fm_dev[i];
     }
+    *mod_vpp = (fmax - fmin) * 3.3f / 60000.0f;
     return (fmax - fmin) / 2000.0f;
 }
 
@@ -159,7 +161,7 @@ void TaskC_Loop(void) {
     if (S_env > 100.0f) {
         // AM
         mode = 0;
-        measured_ma   = Calc_MA(AM_envelope_buffer, FFT_LENGTH);
+        measured_ma   = Calc_MA(AM_envelope_buffer, FFT_LENGTH, &measured_vpp);
         measured_freq = Calc_Freq_ZC(AM_envelope_buffer, FFT_LENGTH, 800000.0f, 20.0f);
         if (measured_freq < 5000.0f || measured_freq > 10000.0f)
             measured_freq = 0.0f;
@@ -168,7 +170,7 @@ void TaskC_Loop(void) {
     } else if (S_freq > 1500.0f) {
         // FM
         mode = 1;
-        measured_dfm  = Calc_DeltaFm(FM_deviation_buffer, FFT_LENGTH);
+        measured_dfm  = Calc_DeltaFm(FM_deviation_buffer, FFT_LENGTH, &measured_vpp);
         measured_freq = Calc_Freq_ZC(FM_deviation_buffer, FFT_LENGTH, 800000.0f, 1000.0f);
         if (measured_freq < 5000.0f || measured_freq > 10000.0f)
             measured_freq = 0.0f;
@@ -184,12 +186,12 @@ void TaskC_Loop(void) {
         measured_mf   = 0.0f;
         measured_dfm  = 0.0f;
         measured_freq = 0.0f;
+        measured_vpp  = 0.0f;
     }
 
-    // DDS 输出
-    measured_vpp = Get_Vpp();
-    SignalGen_UpdateVpp(measured_vpp);
-    if (measured_freq >= 5000.0f && measured_freq <= 10000.0f) {
+    // DDS 输出：幅度用调制信号 Vpp，频率跟随 F
+    if (measured_freq > 0.0f) {
+        SignalGen_UpdateVpp(measured_vpp);
         Set_DDS_Freq(measured_freq);
     }
 
@@ -203,5 +205,8 @@ void TaskC_Loop(void) {
         OLED_ShowFloat(0, 2, measured_mf,   2, 2, 1);
         OLED_ShowFloat(0, 4, measured_dfm,  1, 2, 1);
         OLED_ShowFloat(0, 6, measured_freq, 1, 2, 1);
+    } else {
+        OLED_ShowFloat(0, 2, current_fc, 3, 1, 1);
+        OLED_ShowString(40, 2, "MHz CW", 1);
     }
 }
