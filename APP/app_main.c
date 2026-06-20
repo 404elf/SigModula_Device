@@ -41,7 +41,6 @@ void app_init(void) {
 
 void app_loop(void) {
     static uint8_t init_once = 0;
-    Run_Slow_AGC_200ms();
     if (key_last_flag!=key_flag){
       key_last_flag=key_flag;
       tab_flag=1;

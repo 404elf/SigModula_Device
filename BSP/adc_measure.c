@@ -35,7 +35,6 @@ void ADC_Cal_Vpp(uint16_t* pBuffer, uint16_t length, uint8_t ping_pong_index){
     // 静态变量，重复运行，到点清零，需要记忆
     static uint16_t global_max = 0;
     static uint16_t global_min = 4095;
-    static uint8_t  calc_count = 0;
     
     //半中断中找极值
     for (int i = 0; i < length; i++){
@@ -47,28 +46,20 @@ void ADC_Cal_Vpp(uint16_t* pBuffer, uint16_t length, uint8_t ping_pong_index){
         v_process_buffer[ping_pong_index][i] = (float)pBuffer_Reg-2048.0f;
     }
     
-    calc_count++;
-    
-    //累计50次总结一下，涵盖更大时间范围
-    //!虽然处理数据是O（N），但是中断调用有着固定开销，会使得时间占比越大
-    //*MK 占用不会消失，只是另一个方向转移……
-    if(calc_count >= 200) {
         // 计算最终的 Vpp
-        float final_vpp = (float)(global_max - global_min) * 3.3f / 4095.0f;
-        current_measured_vpp = final_vpp;
+        current_measured_vpp = global_max - global_min;
         
         //准备重新测量
         global_max = 0;
         global_min = 4095;
-        calc_count = 0;
-    }
+    
 }
 
 /**
  * @brief 导出Vpp
  */
 float Get_Vpp(void) {
-    return current_measured_vpp;
+    return (float)(current_measured_vpp) * 3.3f / 4095.0f;
 }
 
 

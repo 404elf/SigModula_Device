@@ -7,14 +7,15 @@ static float measured_ma   = 0.0f;
 static float measured_freq = 0.0f;
 static float measured_vpp  = 0.0f;
 
-/* ---- 调幅度 ma = (Amax-Amin)/(Amax+Amin) ---- */
-static float Calc_MA(float* envelope, uint32_t len) {
+/* ---- 调幅度 ma = (Amax-Amin)/(Amax+Amin)，同时输出包络 Vpp (V) ---- */
+static float Calc_MA(float* envelope, uint32_t len, float* env_vpp) {
     float amax = envelope[0];
     float amin = envelope[0];
     for (uint32_t i = 1; i < len; i++) {
         if (envelope[i] > amax) amax = envelope[i];
         if (envelope[i] < amin) amin = envelope[i];
     }
+    *env_vpp = (amax - amin) * 3.3f / 4095.0f;  // 调制信号 Vpp
     if (amax + amin < 0.001f) return 0.0f;
     return (amax - amin) / (amax + amin);
 }
@@ -85,18 +86,17 @@ void TaskA_Loop(void) {
     // IQ 解调 → 包络数组 AM_envelope_buffer
     Run_IQ_Demodulation_800k(v_process_buffer[buf]);
 
-    // 调幅度 ma
-    measured_ma = Calc_MA(AM_envelope_buffer, FFT_LENGTH);
+    // 调幅度 ma（同时得调制包络 Vpp）
+    measured_ma  = Calc_MA(AM_envelope_buffer, FFT_LENGTH, &measured_vpp);
 
     // 过零测频，滤除无效杂散（对齐 800~4000Hz）
     measured_freq = Calc_Freq_ZC(AM_envelope_buffer, FFT_LENGTH, 800000.0f);
     if (measured_freq < 800.0f || measured_freq > 4000.0f)
         measured_freq = 0.0f;
 
-    // DDS 输出：幅度跟踪 Vpp，频率跟随解调结果
-    measured_vpp = Get_Vpp();
-    SignalGen_UpdateVpp(measured_vpp);
-    if (measured_freq >= 800.0f && measured_freq <= 4000.0f) {
+    // DDS 输出：幅度用调制包络 Vpp，频率跟随 F
+    if (measured_freq > 0.0f) {
+        SignalGen_UpdateVpp(measured_vpp);
         Set_DDS_Freq(measured_freq);
     }
 
