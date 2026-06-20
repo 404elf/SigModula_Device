@@ -8,15 +8,16 @@ static float measured_dfm  = 0.0f;   // Δfm (kHz)
 static float measured_freq = 0.0f;   // 调制频率 F (Hz)
 static float measured_vpp  = 0.0f;
 
-/* ---- 最大频偏 Δfm (kHz) = (fmax_Hz - fmin_Hz) / 2 / 1000 ---- */
-static float Calc_DeltaFm(float* fm_dev, uint32_t len) {
+/* ---- 最大频偏 Δfm (kHz)，同时输出调制信号 Vpp (Hz→V映射) ---- */
+static float Calc_DeltaFm(float* fm_dev, uint32_t len, float* mod_vpp) {
     float fmax = fm_dev[0];
     float fmin = fm_dev[0];
     for (uint32_t i = 1; i < len; i++) {
         if (fm_dev[i] > fmax) fmax = fm_dev[i];
         if (fm_dev[i] < fmin) fmin = fm_dev[i];
     }
-    return (fmax - fmin) / 2000.0f;
+    *mod_vpp = (fmax - fmin) * 3.3f / 60000.0f;  // 60kHz → 3.3V
+    return (fmax - fmin) / 2000.0f;                // Δfm (kHz)
 }
 
 /* ---- 多周期过零测频（带迟滞抗噪） ---- */
@@ -75,8 +76,8 @@ void TaskB_Loop(void) {
     // IQ 解调 → FM_deviation_buffer（瞬时频偏，Hz）
     Run_IQ_Demodulation_800k(v_process_buffer[buf]);
 
-    // Δfm (kHz)
-    measured_dfm = Calc_DeltaFm(FM_deviation_buffer, FFT_LENGTH);
+    // Δfm (kHz)，同时得调制信号 Vpp
+    measured_dfm  = Calc_DeltaFm(FM_deviation_buffer, FFT_LENGTH, &measured_vpp);
 
     // 过零测频（调制信号 3~5kHz）
     measured_freq = Calc_Freq_ZC(FM_deviation_buffer, FFT_LENGTH, 800000.0f);
@@ -89,10 +90,9 @@ void TaskB_Loop(void) {
     else
         measured_mf = 0.0f;
 
-    // DDS 输出解调波形
-    measured_vpp = Get_Vpp();
-    SignalGen_UpdateVpp(measured_vpp);
-    if (measured_freq >= 3000.0f && measured_freq <= 5000.0f) {
+    // DDS 输出：幅度用调制频偏 Vpp，频率跟随 F
+    if (measured_freq > 0.0f) {
+        SignalGen_UpdateVpp(measured_vpp);
         Set_DDS_Freq(measured_freq);
     }
 
