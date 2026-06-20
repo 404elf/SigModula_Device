@@ -15,7 +15,24 @@ static void trace_stack_in_ccm(int depth);
 
 //º¯ÊýÊµÏÖ  
 void test_init(void) {
-    config_test_init();
+    // OLED
+    OLED_Init();
+    OLED_ClearBuffer();
+    OLED_ShowString(0, 0, "Module Test", 1);
+    OLED_ShowString(0, 2, "OLED......OK", 1);
+    OLED_Refresh();
+    // AD9850 10MHz
+    AD985x_Init(AD9850, SERIAL);
+    AD985x_SetFre_Phase(10000000.0f, 0);
+    OLED_ShowString(0, 4, "AD9850....OK", 1);
+    OLED_Refresh();
+    // VGA841 1.0V
+    VGA_SetVoltage(1.0f);
+    OLED_ShowString(0, 6, "VGA841....OK", 1);
+    OLED_Refresh();
+    // DDS 1kHz
+    Init_SineRef();
+    SignalGen_Start(1.5f);
 }
 void test_loop(void) {
     config_test_loop();

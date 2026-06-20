@@ -20,13 +20,13 @@
 #define OLED_I2C_SDA_Pin    GPIO_PIN_7
 
 // ---------- I2C 通信配置 ----------
-#define OLED_I2C_ADDR       (0x78 >> 1)     // SSD1306 I2C 地址（7位地址，默认 0x3C 左移一位为 0x78）
-#define OLED_I2C_SPEED_DELAY 5              // I2C 延时（单位：空循环次数，值越大速度越慢）
+#define OLED_I2C_ADDR       0x78            // SSD1306 8位I2C地址 (7位地址0x3C<<1|W=0x78, 不亮换0x7A)
+#define OLED_I2C_SPEED_DELAY 100             // I2C 延时（168MHz下约2.4μs，适配400kHz）
 
 // ---------- GPIO 初始化开关 ----------
 // 1 : OLED_Init() 自动配置 SCL/SDA 为推挽输出（方便快捷，但会和 CubeMX 配置冲突）
 // 0 : 不自动配置，需用户在 CubeMX 中将 SCL/SDA 设为推挽输出（推荐，避免冲突）
-#define OLED_GPIO_INIT_ENABLE   0           // 默认关闭，由 CubeMX 配置引脚
+#define OLED_GPIO_INIT_ENABLE   0           // 由 CubeMX 统一管理 GPIO，避免冲突
 
 // ---------- 引脚操作宏（AD985x 风格） ----------
 #define OLED_SCL_H()    HAL_GPIO_WritePin(OLED_I2C_SCL_Port, OLED_I2C_SCL_Pin, GPIO_PIN_SET)

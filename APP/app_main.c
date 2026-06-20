@@ -31,10 +31,10 @@ void app_init(void) {
     VGA_SetVoltage(1.0f);
 
     //开启时钟（顺手清零）
-  __HAL_TIM_SET_COUNTER(&htim3,0);
-  HAL_TIM_Base_Start(&htim3);
-  __HAL_TIM_SET_COUNTER(&htim6,0);
-  HAL_TIM_Base_Start(&htim6);
+    __HAL_TIM_SET_COUNTER(&htim3,0);
+    __HAL_TIM_SET_COUNTER(&htim6,0);
+    HAL_TIM_Base_Start(&htim3);
+    HAL_TIM_Base_Start(&htim6);
 
 }
 
@@ -52,7 +52,7 @@ void app_loop(void) {
         case TASK_Init:
             if (!init_once) {
                 OLED_ClearBuffer();
-                OLED_ShowString(0, 0, "Press key to start", 1);
+                OLED_ShowString(0, 0, "Press to start", 1);
                 OLED_Refresh();
                 init_once = 1;
             }
