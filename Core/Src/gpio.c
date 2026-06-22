@@ -85,7 +85,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PBPin PBPin PBPin */
-  GPIO_InitStruct.Pin = TASKA_KEY_Pin|TASKB_KEY_Pin|TASKC_KEY_Pin;
+  GPIO_InitStruct.Pin = ADD_KEY_Pin|DEL_KEY_Pin|TASK3_KEY_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);

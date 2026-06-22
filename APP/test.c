@@ -33,6 +33,7 @@ void test_init(void) {
     // DDS 1kHz
     Init_SineRef();
     SignalGen_Start(1.5f);
+    Set_DDS_Freq(1000.0f);
 }
 void test_loop(void) {
     config_test_loop();

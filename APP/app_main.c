@@ -76,7 +76,7 @@ void app_loop(void) {
 // 按键处理（EXIT 中断回调）
 void Key_handler(uint16_t GPIO_Pin) {
     uint32_t now = HAL_GetTick();
-    if (now - last_press_tick < 200) return;   // 200ms 去抖
+    if (now - last_press_tick < 1000) return;   // 200ms 去抖
     if (key_flag==TASK_Init) {key_flag = TaskA;return;}
     switch (GPIO_Pin) {
         case GPIO_PIN_0:
@@ -120,13 +120,15 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
     }
 }
 
-void HAL_DAC_ConvHalfCpltCallbackCh2(DAC_HandleTypeDef *hdac) {
-    if (hdac->Instance == DAC) {
+// 通道 2 半传输完成中断回调
+void HAL_DACEx_ConvHalfCpltCallbackCh2(DAC_HandleTypeDef *hdac) {
+    if (hdac->Instance == DAC) { // 部分芯片为 DAC1
         SignalGen_DAC_HalfCpltCallback();
     }
 }
 
-void HAL_DAC_ConvCpltCallbackCh2(DAC_HandleTypeDef *hdac) {
+// 通道 2 传输完成中断回调
+void HAL_DACEx_ConvCpltCallbackCh2(DAC_HandleTypeDef *hdac) {
     if (hdac->Instance == DAC) {
         SignalGen_DAC_FullCpltCallback();
     }

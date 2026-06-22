@@ -31,7 +31,7 @@ void AD985x_Init(uint8_t cm ,uint8_t sp)
 	}
 	else if(LOAD_MODE==SERIAL) //串口
 	{
-		D0_H();D1_H();D2_L();	//当使用串行驱动时，D0、D1、D2脚需输入（110）固定电平。
+		//D0_H();D1_H();D2_L();	//当使用串行驱动时，D0、D1、D2脚需输入（110）固定电平。
 		AD985x_reset_serial();//复位为(串口模式)  
 	}	
 }

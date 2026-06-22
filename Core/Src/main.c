@@ -27,7 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_main.h"
-
+#include "test.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -97,7 +97,13 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-  app_init();
+
+  // DDS 测试：1kHz 正弦波，Vpp=1.0V，输出到 PA5
+  Init_SineRef();                  // 建 1024 点基准正弦表
+  SignalGen_Start(1.0f);           // 填缓冲 + 启动 DAC DMA
+  Set_DDS_Freq(1000.0f);           // 覆盖默认 0Hz，设为 1kHz
+  HAL_TIM_Base_Start(&htim6);      // 启动 TIM6 触发 DAC（SignalGen_Start 未做）
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -107,7 +113,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    app_loop();
+    
+    //app_loop();
   }
   /* USER CODE END 3 */
 }

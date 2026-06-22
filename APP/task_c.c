@@ -69,7 +69,7 @@ static float Calc_MA(float* envelope, uint32_t len, float* env_vpp) {
         if (envelope[i] > amax) amax = envelope[i];
         if (envelope[i] < amin) amin = envelope[i];
     }
-    *env_vpp = (amax - amin) * 3.3f / 2047.0f;  // 调制信号 Vpp（包络范围0~2047）
+    *env_vpp = (amax - amin) * 3.3f / 4095.0f;
     if (amax + amin < 0.001f) return 0.0f;
     return (amax - amin) / (amax + amin);
 }

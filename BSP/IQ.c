@@ -45,28 +45,6 @@ void Run_IQ_Demodulation_800k(float* pRawData) {
         
         I_raw = cos_table[phase_step] * pRawData[n];
         Q_raw = sin_table[phase_step] * pRawData[n];
-        // switch (phase_step) {
-        //     case 0:
-        //         I_raw =  2.0f * pRawData[n];
-        //         Q_raw =  0.0f;
-        //         break;
-        //     case 1:
-        //         I_raw =  0.0f;
-        //         Q_raw = -2.0f * pRawData[n];
-        //         break;
-        //     case 2:
-        //         I_raw = -2.0f * pRawData[n];
-        //         Q_raw =  0.0f;
-        //         break;
-        //     case 3:
-        //         I_raw =  0.0f;
-        //         Q_raw =  2.0f * pRawData[n];
-        //         break;
-        //     default:
-        //         I_raw = 0.0f;
-        //         Q_raw = 0.0f;
-        //         break;
-        // }
 
         //µÍÍ¨ÂË²¨£¬ÂË³ý¸ßÆµ400khz
         filter_buf_I[filter_index] = I_raw;
