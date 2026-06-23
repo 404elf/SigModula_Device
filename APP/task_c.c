@@ -74,15 +74,29 @@ static float Calc_MA(float* envelope, uint32_t len, float* env_vpp) {
     return (amax - amin) / (amax + amin);
 }
 
-/* ---- 最大频偏 Δfm (kHz)，同时输出调制 Vpp (Hz→V) ---- */
+/* ---- 最大频偏 Δfm (kHz)，用标准差(RMS)替代峰峰值，免疫尖峰噪声 ---- */
+/*       正弦波: 振幅 A = √2 × RMS                                    */
 static float Calc_DeltaFm(float* fm_dev, uint32_t len, float* mod_vpp) {
-    float fmax = fm_dev[0], fmin = fm_dev[0];
-    for (uint32_t i = 1; i < len; i++) {
-        if (fm_dev[i] > fmax) fmax = fm_dev[i];
-        if (fm_dev[i] < fmin) fmin = fm_dev[i];
+    // 1. 计算均值
+    float mean = 0.0f;
+    for (uint32_t i = 0; i < len; i++) mean += fm_dev[i];
+    mean /= (float)len;
+
+    // 2. 计算标准差 (RMS)
+    float sum_sq = 0.0f;
+    for (uint32_t i = 0; i < len; i++) {
+        float d = fm_dev[i] - mean;
+        sum_sq += d * d;
     }
-    *mod_vpp = (fmax - fmin) * 3.3f / 60000.0f;
-    return (fmax - fmin) / 2000.0f;
+    float S_freq = sqrtf(sum_sq / (float)len);
+
+    // 3. 正弦波振幅 A = √2 × S_freq，即峰值频偏 (Hz)
+    float dfm_peak_hz = S_freq * 1.414214f;
+
+    // 4. 调制信号 Vpp = 2×振幅 (峰峰值), 映射 60kHz → 3.3V
+    *mod_vpp = (dfm_peak_hz * 2.0f) * 3.3f / 60000.0f;
+
+    return dfm_peak_hz / 1000.0f;   // Δfm (kHz)
 }
 
 /* ================================================================
@@ -209,6 +223,6 @@ void TaskC_Loop(void) {
     } else {
         OLED_ShowFloat(0, 2, current_fc, 3, 1, 1);
         OLED_ShowString(40, 2, "MHz CW", 1);
-    }
+    } 
     OLED_Refresh();
 }

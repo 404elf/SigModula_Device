@@ -73,6 +73,30 @@ void Run_IQ_Demodulation_800k(float* pRawData) {
         // 差分求导 采样率为 fs = 800kHz
         // 常数项 800k/2pi ≈ 127323.954
         FM_deviation_buffer[n] = 127323.954f * delta_theta;
+
     }
+    //差分是高通滤波器，导致高频噪音被放大，现在用低通滤波
+        float fm_sum = 0.0f;
+        uint32_t i;
+
+        // 初始16个点
+        for (i = 0; i < 16; i++) {
+            fm_sum += FM_deviation_buffer[i];
+        }
+
+        // 滑动窗口平均
+        for (i = 0; i < FFT_LENGTH - 16; i++) {
+            float avg = fm_sum / 16.0f;
+            // 加上新进窗口的点，减去离开窗口的点
+            fm_sum += FM_deviation_buffer[i + 16] - FM_deviation_buffer[i];
+            // 将平滑后的值覆盖回原数组
+            FM_deviation_buffer[i] = avg;
+        }
+
+        //补齐
+        float last_val = FM_deviation_buffer[FFT_LENGTH - 17];
+        for (i = FFT_LENGTH - 16; i < FFT_LENGTH; i++) {
+            FM_deviation_buffer[i] = last_val;
+        }
 }
 

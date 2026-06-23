@@ -28,7 +28,6 @@
 /* USER CODE BEGIN Includes */
 #include "app_main.h"
 #include "test.h"
-#include "VGA841.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
