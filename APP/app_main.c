@@ -116,7 +116,6 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc) {
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
     if (hadc->Instance == MEASURE_ADC_INSTANCE) {
         Measure_ADC_FullCpltCallback();
-       
     }
 }
 

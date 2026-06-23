@@ -163,7 +163,7 @@ void TaskC_Loop(void) {
         mode = 0;
         measured_ma   = Calc_MA(AM_envelope_buffer, FFT_LENGTH, &measured_vpp);
         measured_freq = Calc_Freq_ZC(AM_envelope_buffer, FFT_LENGTH, 800000.0f, 20.0f);
-        if (measured_freq < 5000.0f || measured_freq > 10000.0f)
+        if (measured_freq < 1000.0f || measured_freq > 10000.0f)
             measured_freq = 0.0f;
         measured_dfm  = 0.0f;
         measured_mf   = 0.0f;
@@ -172,7 +172,7 @@ void TaskC_Loop(void) {
         mode = 1;
         measured_dfm  = Calc_DeltaFm(FM_deviation_buffer, FFT_LENGTH, &measured_vpp);
         measured_freq = Calc_Freq_ZC(FM_deviation_buffer, FFT_LENGTH, 800000.0f, 1000.0f);
-        if (measured_freq < 5000.0f || measured_freq > 10000.0f)
+        if (measured_freq < 3000.0f || measured_freq > 10000.0f)
             measured_freq = 0.0f;
         if (measured_freq > 0.0f)
             measured_mf = measured_dfm * 1000.0f / measured_freq;

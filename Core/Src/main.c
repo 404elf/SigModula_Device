@@ -28,6 +28,7 @@
 /* USER CODE BEGIN Includes */
 #include "app_main.h"
 #include "test.h"
+#include "VGA841.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -96,13 +97,12 @@ int main(void)
   MX_TIM6_Init();
   MX_ADC1_Init();
   MX_TIM3_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
-  // DDS 测试：1kHz 正弦波，Vpp=1.0V，输出到 PA5
-  Init_SineRef();                  // 建 1024 点基准正弦表
-  SignalGen_Start(1.0f);           // 填缓冲 + 启动 DAC DMA
-  Set_DDS_Freq(1000.0f);           // 覆盖默认 0Hz，设为 1kHz
-  HAL_TIM_Base_Start(&htim6);      // 启动 TIM6 触发 DAC（SignalGen_Start 未做）
+  // VGA 测试：PA4(DAC_CH1) → VCA841 VG 控制，调参数改输出幅度
+  HAL_DAC_Start(&hdac, DAC_CHANNEL_1);  // 使能 DAC CH1
+  VGA_SetVoltage(1.5f);                 // 设 VG=1V
 
   /* USER CODE END 2 */
 
@@ -114,7 +114,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     
-    //app_loop();
+    // 开环测试，空循环即可
   }
   /* USER CODE END 3 */
 }
