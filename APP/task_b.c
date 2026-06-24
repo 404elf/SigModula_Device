@@ -27,8 +27,8 @@ static float Calc_DeltaFm(float* fm_dev, uint32_t len, float* mod_vpp) {
     // 3. 正弦波振幅 A = √2 × S_freq，即峰值频偏 (Hz)
     float dfm_peak_hz = S_freq * 1.414214f;
 
-    // 4. 调制信号 Vpp = 2×振幅 (峰峰值), 映射 60kHz → 3.3V
-    *mod_vpp = (dfm_peak_hz * 2.0f) * 3.3f / 60000.0f;
+    // 4. 调制信号 Vpp = 2V × (Δfm / 60kHz)，Δfm 作为系数
+    *mod_vpp = dfm_peak_hz / 30000.0f;   // = 2.0f × (dfm_peak_hz / 60000.0f)
 
     return dfm_peak_hz / 1000.0f;   // Δfm (kHz)
 }
@@ -69,7 +69,7 @@ void TaskB_Init(void) {
     SignalGen_Resume();
 
     OLED_ClearBuffer();
-    OLED_ShowString(0, 0, "Task B: FM Demod", 1);
+    OLED_ShowString(0, 0, "Task 2: FM Demod", 1);
     OLED_ShowString(0, 2, "mf :", 1);
     OLED_ShowString(0, 4, "dfm:", 1);
     OLED_ShowString(0, 6, "F  :", 1);
@@ -94,7 +94,7 @@ void TaskB_Loop(void) {
 
     // 过零测频（调制信号 3~5kHz）
     measured_freq = Calc_Freq_ZC(FM_deviation_buffer, FFT_LENGTH, 800000.0f);
-    if (measured_freq < 3000.0f || measured_freq > 5000.0f)
+    if (measured_freq < 2000.0f || measured_freq > 8000.0f)
         measured_freq = 0.0f;
 
     // mf = Δfm(Hz) / F = Δfm(kHz) * 1000 / F
@@ -102,8 +102,12 @@ void TaskB_Loop(void) {
         measured_mf = measured_dfm * 1000.0f / measured_freq;
     else
         measured_mf = 0.0f;
+    // 一阶滞后滤波 α=0.9，平滑显示
+    static float mf_filtered = 0.0f;
+    mf_filtered = 0.1f * measured_mf + 0.9f * mf_filtered;
+    measured_mf = mf_filtered;
 
-    // DDS 输出：幅度用调制频偏 Vpp，频率跟随 F
+    // DDS 输出：幅度用 measured_vpp（= 2V × Δfm/60kHz），频率跟随 F
     if (measured_freq > 0.0f) {
         SignalGen_UpdateVpp(measured_vpp);
         Set_DDS_Freq(measured_freq);
@@ -111,7 +115,7 @@ void TaskB_Loop(void) {
 
     // OLED 刷新
     OLED_ClearBuffer();
-    OLED_ShowString(0, 0, "Task B: FM Demod", 1);
+    OLED_ShowString(0, 0, "Task 2: FM Demod", 1);
     OLED_ShowString(0, 2, "mf :", 1);
     OLED_ShowString(0, 4, "dfm:", 1);
     OLED_ShowString(0, 6, "F  :", 1);

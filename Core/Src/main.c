@@ -32,7 +32,12 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+static void config_test_loop(void) {
+    // 编码对齐测试：如果你看到的是正常汉字，说明设置正确；如果是乱码，请修改 Encoding 为 GB2312
+    //点灯测试，我板子的调试小灯对应PC3，可根据需求自行更改，确保正确移植，测试后可删除
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);
+    HAL_Delay(5000);
+}
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -99,10 +104,7 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
-  // VGA 测试：PA4(DAC_CH1) → VCA841 VG 控制，调参数改输出幅度
-  HAL_DAC_Start(&hdac, DAC_CHANNEL_1);  // 使能 DAC CH1
-  VGA_SetVoltage(1.5f);                 // 设 VG=1V
-
+  app_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -110,7 +112,8 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+    app_loop();
+    //config_test_loop();
     /* USER CODE BEGIN 3 */
     
     // 开环测试，空循环即可

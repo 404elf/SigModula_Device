@@ -15,9 +15,13 @@ static float Calc_MA(float* envelope, uint32_t len, float* env_vpp) {
         if (envelope[i] > amax) amax = envelope[i];
         if (envelope[i] < amin) amin = envelope[i];
     }
-    *env_vpp = (amax - amin) * 3.3f / 4095.0f;  // 调制信号 Vpp
-    if (amax + amin < 0.001f) return 0.0f;
-    return (amax - amin) / (amax + amin);
+    float ma;
+    if (amax + amin < 0.001f)
+        ma = 0.0f;
+    else
+        ma = (amax - amin) / (amax + amin);
+    *env_vpp = 2.0f * ma;  // 2V 满量程 × ma
+    return ma;
 }
 
 /* ---- 多周期过零测频（带迟滞抗噪，最低支持1kHz） ---- */
@@ -65,7 +69,7 @@ void TaskA_Init(void) {
 
     // OLED 任务标题
     OLED_ClearBuffer();
-    OLED_ShowString(0, 0, "Task A: AM Demod", 1);
+    OLED_ShowString(0, 0, "Task 1: AM Demod", 1);
     OLED_ShowString(0, 2, "ma :", 1);
     OLED_ShowString(0, 4, "F  :", 1);
     OLED_Refresh();
@@ -91,10 +95,10 @@ void TaskA_Loop(void) {
 
     // 过零测频，滤除无效杂散（对齐 800~4000Hz）
     measured_freq = Calc_Freq_ZC(AM_envelope_buffer, FFT_LENGTH, 800000.0f);
-    if (measured_freq < 800.0f || measured_freq > 4000.0f)
+    if (measured_freq < 500.0f || measured_freq > 6000.0f)
         measured_freq = 0.0f;
 
-    // DDS 输出：幅度用调制包络 Vpp，频率跟随 F
+    // DDS 输出：幅度用 measured_vpp（= 2V × ma），频率跟随 F
     if (measured_freq > 0.0f) {
         SignalGen_UpdateVpp(measured_vpp);
         Set_DDS_Freq(measured_freq);
@@ -102,7 +106,7 @@ void TaskA_Loop(void) {
 
     // OLED 刷新
     OLED_ClearBuffer();
-    OLED_ShowString(0, 0, "Task A: AM Demod", 1);
+    OLED_ShowString(0, 0, "Task 1: AM Demod", 1);
     OLED_ShowString(0, 2, "ma :", 1);
     OLED_ShowString(0, 4, "F  :", 1);
     OLED_ShowString(0, 6, "Vpp  :", 1);

@@ -53,7 +53,7 @@ void Run_IQ_Demodulation_800k(float* pRawData) {
         filter_index++;
         if (filter_index >= 4) filter_index = 0; // 4点循环
 
-        // 四点滑动平均
+        // 四点滑动平均（低通滤波去除400khz）
         I_filtered = (filter_buf_I[0] + filter_buf_I[1] + filter_buf_I[2] + filter_buf_I[3]) / 4.0f;
         Q_filtered = (filter_buf_Q[0] + filter_buf_Q[1] + filter_buf_Q[2] + filter_buf_Q[3]) / 4.0f;
 
@@ -75,28 +75,48 @@ void Run_IQ_Demodulation_800k(float* pRawData) {
         FM_deviation_buffer[n] = 127323.954f * delta_theta;
 
     }
-    //差分是高通滤波器，导致高频噪音被放大，现在用低通滤波
+    // 差分是高通滤波器，导致高频噪音被放大，用滑动平均低通滤波
         float fm_sum = 0.0f;
         uint32_t i;
+        const float win_div = (float)FM_SMOOTH_WINDOW;
 
-        // 初始16个点
-        for (i = 0; i < 16; i++) {
+        // 累加初始窗口内的点
+        for (i = 0; i < FM_SMOOTH_WINDOW; i++) {
             fm_sum += FM_deviation_buffer[i];
         }
 
         // 滑动窗口平均
-        for (i = 0; i < FFT_LENGTH - 16; i++) {
-            float avg = fm_sum / 16.0f;
-            // 加上新进窗口的点，减去离开窗口的点
-            fm_sum += FM_deviation_buffer[i + 16] - FM_deviation_buffer[i];
+        for (i = 0; i < FFT_LENGTH - FM_SMOOTH_WINDOW; i++) {
+            float avg = fm_sum / win_div;
+            // 新点加入窗口，旧点离开窗口（间隔 = 窗口宽度）
+            fm_sum += FM_deviation_buffer[i + FM_SMOOTH_WINDOW] - FM_deviation_buffer[i];
             // 将平滑后的值覆盖回原数组
             FM_deviation_buffer[i] = avg;
         }
 
-        //补齐
-        float last_val = FM_deviation_buffer[FFT_LENGTH - 17];
-        for (i = FFT_LENGTH - 16; i < FFT_LENGTH; i++) {
+        // 尾部补齐（最后 window-1 个点用最后一个有效值填充）
+        float last_val = FM_deviation_buffer[FFT_LENGTH - FM_SMOOTH_WINDOW - 1];
+        for (i = FFT_LENGTH - FM_SMOOTH_WINDOW; i < FFT_LENGTH; i++) {
             FM_deviation_buffer[i] = last_val;
         }
+
+    // AM 包络 16 点滑动平均低通滤波（与 FM 处理对称，统一去噪）
+        float am_sum = 0.0f;
+        const float am_win_div = (float)AM_SMOOTH_WINDOW;
+
+        for (i = 0; i < AM_SMOOTH_WINDOW; i++) {
+            am_sum += AM_envelope_buffer[i];
+        }
+
+        for (i = 0; i < FFT_LENGTH - AM_SMOOTH_WINDOW; i++) {
+            float avg = am_sum / am_win_div;
+            am_sum += AM_envelope_buffer[i + AM_SMOOTH_WINDOW] - AM_envelope_buffer[i];
+            AM_envelope_buffer[i] = avg;
+        }
+
+        float am_last = AM_envelope_buffer[FFT_LENGTH - AM_SMOOTH_WINDOW - 1];
+        for (i = FFT_LENGTH - AM_SMOOTH_WINDOW; i < FFT_LENGTH; i++) {
+            AM_envelope_buffer[i] = am_last;
+    }
 }
 

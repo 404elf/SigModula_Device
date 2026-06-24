@@ -1,6 +1,5 @@
 #include "task_c.h"
 #include "app_main.h"
-#include "arm_math.h"
 
 #define MAX_ZC      32
 #define NOISE_GATE  5000.0f        // Goertzel 能量阈值
@@ -69,9 +68,13 @@ static float Calc_MA(float* envelope, uint32_t len, float* env_vpp) {
         if (envelope[i] > amax) amax = envelope[i];
         if (envelope[i] < amin) amin = envelope[i];
     }
-    *env_vpp = (amax - amin) * 3.3f / 4095.0f;
-    if (amax + amin < 0.001f) return 0.0f;
-    return (amax - amin) / (amax + amin);
+    float ma;
+    if (amax + amin < 0.001f)
+        ma = 0.0f;
+    else
+        ma = (amax - amin) / (amax + amin);
+    *env_vpp = 2.0f * ma;
+    return ma;
 }
 
 /* ---- 最大频偏 Δfm (kHz)，用标准差(RMS)替代峰峰值，免疫尖峰噪声 ---- */
@@ -93,8 +96,8 @@ static float Calc_DeltaFm(float* fm_dev, uint32_t len, float* mod_vpp) {
     // 3. 正弦波振幅 A = √2 × S_freq，即峰值频偏 (Hz)
     float dfm_peak_hz = S_freq * 1.414214f;
 
-    // 4. 调制信号 Vpp = 2×振幅 (峰峰值), 映射 60kHz → 3.3V
-    *mod_vpp = (dfm_peak_hz * 2.0f) * 3.3f / 60000.0f;
+    // 4. 调制信号 Vpp = 2V × (Δfm / 60kHz)
+    *mod_vpp = dfm_peak_hz / 30000.0f;
 
     return dfm_peak_hz / 1000.0f;   // Δfm (kHz)
 }
@@ -142,14 +145,15 @@ void TaskC_Init(void) {
     // 扫频锁相
     uint8_t locked = SweepAndLock();
 
-    // OLED 显示
+    // OLED 显示 — 与 Task A/B 格式一致
     OLED_ClearBuffer();
-    OLED_ShowString(0, 0, "Task C: Auto", 1);
+    OLED_ShowString(0, 0, "Task 3: Auto", 1);
+    OLED_ShowString(0, 2, "fc :", 1);
     if (locked) {
-        OLED_ShowFloat(0, 2, current_fc, 3, 1, 1);
-        OLED_ShowString(0, 4, "Locked", 1);
+        OLED_ShowFloat(40, 2, current_fc, 3, 1, 1);
+        OLED_ShowString(70, 2, "MHz", 1);
     } else {
-        OLED_ShowString(0, 2, "No Signal", 1);
+        OLED_ShowString(40, 2, "No Sig", 1);
     }
     OLED_Refresh();
 }
@@ -172,27 +176,31 @@ void TaskC_Loop(void) {
     float S_freq = Calc_StdDiv(FM_deviation_buffer, FFT_LENGTH);
 
     // ---- 决策树 ----
-    if (S_env > 100.0f) {
-        // AM
-        mode = 0;
-        measured_ma   = Calc_MA(AM_envelope_buffer, FFT_LENGTH, &measured_vpp);
-        measured_freq = Calc_Freq_ZC(AM_envelope_buffer, FFT_LENGTH, 800000.0f, 20.0f);
-        if (measured_freq < 1000.0f || measured_freq > 10000.0f)
-            measured_freq = 0.0f;
-        measured_dfm  = 0.0f;
-        measured_mf   = 0.0f;
-    } else if (S_freq > 1500.0f) {
+    if (S_freq >  3000.0f) {
         // FM
         mode = 1;
         measured_dfm  = Calc_DeltaFm(FM_deviation_buffer, FFT_LENGTH, &measured_vpp);
         measured_freq = Calc_Freq_ZC(FM_deviation_buffer, FFT_LENGTH, 800000.0f, 1000.0f);
-        if (measured_freq < 3000.0f || measured_freq > 10000.0f)
+        if (measured_freq < 2000.0f || measured_freq > 15000.0f)
             measured_freq = 0.0f;
         if (measured_freq > 0.0f)
             measured_mf = measured_dfm * 1000.0f / measured_freq;
         else
             measured_mf = 0.0f;
+        // 一阶滞后滤波 α=0.9，平滑显示
+        static float mf_filtered = 0.0f;
+        mf_filtered = 0.1f * measured_mf + 0.9f * mf_filtered;
+        measured_mf = mf_filtered;
         measured_ma   = 0.0f;
+    } else if (S_env > 100.0f) {
+        // AM
+        mode = 0;
+        measured_ma   = Calc_MA(AM_envelope_buffer, FFT_LENGTH, &measured_vpp);
+        measured_freq = Calc_Freq_ZC(AM_envelope_buffer, FFT_LENGTH, 800000.0f, 20.0f);
+        if (measured_freq < 500.0f || measured_freq > 15000.0f)
+            measured_freq = 0.0f;
+        measured_dfm  = 0.0f;
+        measured_mf   = 0.0f;
     } else {
         // CW
         mode = 2;
@@ -203,26 +211,45 @@ void TaskC_Loop(void) {
         measured_vpp  = 0.0f;
     }
 
-    // DDS 输出：幅度用调制信号 Vpp，频率跟随 F
+    // DDS 输出：幅度用 measured_vpp（= 2V × 系数），频率跟随 F
     if (measured_freq > 0.0f) {
         SignalGen_UpdateVpp(measured_vpp);
         Set_DDS_Freq(measured_freq);
     }
 
-    // OLED 刷新
+    // OLED 刷新 — 与 Task A/B 显示格式保持一致，仅增加模式种类判断
     OLED_ClearBuffer();
-    OLED_ShowString(0, 0, mode == 0 ? "AM " : mode == 1 ? "FM " : "CW ", 1);
-    OLED_ShowFloat(40, 0, current_fc, 3, 1, 1);
+    // OLED_ShowString(0, 2, "Se :", 1);
+    // OLED_ShowFloat(40, 2, S_env, 5, 0, 1);
+    // OLED_ShowString(0, 4, "Sf :", 1);
+    // OLED_ShowFloat(40, 4, S_freq, 5, 0, 1);
     if (mode == 0) {
-        OLED_ShowFloat(0, 2, measured_ma,   2, 2, 1);
-        OLED_ShowFloat(0, 4, measured_freq, 1, 2, 1);
+        // AM — 与 Task A 格式一致
+        OLED_ShowString(0, 0, "AM ", 1);
+        OLED_ShowFloat(30, 0, current_fc, 3, 1, 1);
+        OLED_ShowString(0, 2, "ma :", 1);
+        OLED_ShowString(0, 4, "F  :", 1);
+        OLED_ShowString(0, 6, "Vpp:", 1);
+        OLED_ShowFloat(40, 2, measured_ma,   2, 2, 1);
+        OLED_ShowFloat(40, 4, measured_freq, 1, 2, 1);
+        OLED_ShowFloat(40, 6, measured_vpp,  1, 2, 1);
     } else if (mode == 1) {
-        OLED_ShowFloat(0, 2, measured_mf,   2, 2, 1);
-        OLED_ShowFloat(0, 4, measured_dfm,  1, 2, 1);
-        OLED_ShowFloat(0, 6, measured_freq, 1, 2, 1);
+        // // FM — 与 Task B 格式一致
+        OLED_ShowString(0, 0, "FM ", 1);
+        OLED_ShowFloat(30, 0, current_fc, 3, 1, 1);
+        OLED_ShowString(0, 2, "mf :", 1);
+        OLED_ShowString(0, 4, "dfm:", 1);
+        OLED_ShowString(0, 6, "F  :", 1);
+        OLED_ShowFloat(40, 2, measured_mf,   2, 2, 1);
+        OLED_ShowFloat(40, 4, measured_dfm,  1, 2, 1);
+        OLED_ShowFloat(40, 6, measured_freq, 1, 2, 1);
     } else {
-        OLED_ShowFloat(0, 2, current_fc, 3, 1, 1);
-        OLED_ShowString(40, 2, "MHz CW", 1);
-    } 
+        // // CW
+        OLED_ShowString(0, 0, "CW ", 1);
+        OLED_ShowFloat(30, 0, current_fc, 3, 1, 1);
+        OLED_ShowString(0, 2, "fc :", 1);
+        OLED_ShowFloat(40, 2, current_fc, 3, 1, 1);
+        OLED_ShowString(70, 2, "MHz", 1);
+    }
     OLED_Refresh();
 }
