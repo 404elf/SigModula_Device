@@ -226,13 +226,13 @@ void TaskC_Loop(void) {
     if (mode == 0) {
         // AM — 与 Task A 格式一致
         OLED_ShowString(0, 0, "AM ", 1);
-        OLED_ShowFloat(30, 0, current_fc, 3, 1, 1);
-        OLED_ShowString(0, 2, "ma :", 1);
-        OLED_ShowString(0, 4, "F  :", 1);
-        OLED_ShowString(0, 6, "Vpp:", 1);
-        OLED_ShowFloat(40, 2, measured_ma,   2, 2, 1);
-        OLED_ShowFloat(40, 4, measured_freq, 1, 2, 1);
-        OLED_ShowFloat(40, 6, measured_vpp,  1, 2, 1);
+        // OLED_ShowFloat(30, 0, current_fc, 3, 1, 1);
+        // OLED_ShowString(0, 2, "ma :", 1);
+        // OLED_ShowString(0, 4, "F  :", 1);
+        // OLED_ShowString(0, 6, "Vpp:", 1);
+        // OLED_ShowFloat(40, 2, measured_ma,   2, 2, 1);
+        // OLED_ShowFloat(40, 4, measured_freq, 1, 2, 1);
+        // OLED_ShowFloat(40, 6, measured_vpp,  1, 2, 1);
     } else if (mode == 1) {
         // // FM — 与 Task B 格式一致
         OLED_ShowString(0, 0, "FM ", 1);

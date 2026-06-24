@@ -101,7 +101,6 @@ int main(void)
   MX_TIM6_Init();
   MX_ADC1_Init();
   MX_TIM3_Init();
-  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
   app_init();
@@ -112,10 +111,9 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-    app_loop();
-    //config_test_loop();
+
     /* USER CODE BEGIN 3 */
-    
+    app_loop();
     // 开环测试，空循环即可
   }
   /* USER CODE END 3 */
